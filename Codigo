@@ -1,0 +1,299 @@
+int pocao = 2;
+int regenVida = 0;
+int cdStamina = 0;      // cd = Cooldown. Esse é para a stamina começar a regenerar após um uso da mesma
+int cdBuffSta = 5000;   // Cooldown do buff de Stamina
+int tempoBuffSta = 0;   // Quanto tempo dura o buff de Stamina
+
+float fadeGameOver = 0;
+float fadeBG = 0;
+
+boolean buffStaAtivo = false;
+boolean usePotion = false;
+boolean gameOver = false;
+boolean pausa = false;
+
+int vida = 100;
+float stamina = 300;
+
+PImage avatar;
+PImage buffSta;
+PImage buffStaVazio;
+PImage pocaoHp;
+PImage pocaoHpVazio;
+PImage contornoHotKey;
+PImage manchaSangueGO;
+
+void setup()
+{
+  size(800,600);
+  
+  avatar = loadImage("fotocabeca.png");
+  
+  buffSta = loadImage("buffstamina.png");
+  buffStaVazio = loadImage("buffstaminavazio.png");
+  
+  pocaoHp = loadImage("pocaohp.png");
+  pocaoHpVazio = loadImage("pocaohpvazio.png");
+  
+  contornoHotKey = loadImage("contornoHotkey.png");
+  
+  manchaSangueGO = loadImage("bloodstain.png");
+}
+
+void draw()
+{
+  if (pausa == true)
+  {
+    
+    background(0);
+    
+    textSize(36);
+    strokeText("PAUSADO", 315, height/2, 255, 0);
+    
+  } else {
+    
+    if (gameOver == false)
+    {
+      
+      background(0);
+      
+      // Desenho do avatar do personagem
+      fill(239,247,10);
+      ellipse(50,50,90,90);
+      fill(255);
+      ellipse(50,50,80,80);
+      image(avatar, 7, 7);
+      
+      // Desenho da barra de HP 
+      fill(99,60,4);
+      rect(105,15,310,30);
+      fill(219,168,96);
+      rect(110,20,300,20);
+      fill(255,0,0);
+      rect(110,20,vida,20);
+      fill(0);
+      rect(135,20,1,8);
+      fill(0);
+      rect(160,20,1,8);
+      fill(0);
+      rect(185,20,1,8);
+      fill(0);
+      rect(210,20,1,20);
+      fill(0);
+      rect(235,20,1,8);
+      fill(0);
+      rect(260,20,1,8);
+      fill(0);
+      rect(285,20,1,8);
+      fill(0);
+      rect(310,20,1,20);
+      fill(0);
+      rect(335,20,1,8);
+      fill(0);
+      rect(360,20,1,8);
+      fill(0);
+      rect(385,20,1,8);
+      
+      // Desenho da barra de Stamina
+      fill(99,60,4);
+      rect(105,50,310,30);
+      fill(219,168,96);
+      rect(110,55,300,20);
+      fill(0,255,0);
+      rect(110,55,stamina,20);
+      fill(0);
+      rect(135,55,1,8);
+      fill(0);
+      rect(160,55,1,8);
+      fill(0);
+      rect(185,55,1,8);
+      fill(0);
+      rect(210,55,1,20);
+      fill(0);
+      rect(235,55,1,8);
+      fill(0);
+      rect(260,55,1,8);
+      fill(0);
+      rect(285,55,1,8);
+      fill(0);
+      rect(310,55,1,20);
+      fill(0);
+      rect(335,55,1,8);
+      fill(0);
+      rect(360,55,1,8);
+      fill(0);
+      rect(385,55,1,8);
+      
+      // Desenho das HotKeys
+      fill(219,168,96,100);
+      rect(106,90,35,35);
+      image(contornoHotKey,106,90);
+      rect(161,90,35,35);
+      image(contornoHotKey,161,90);
+      rect(216,90,35,35);
+      image(contornoHotKey,216,90);
+      rect(271,90,35,35);
+      image(contornoHotKey,271,90);
+      
+      // Quantidade de poções
+      textSize(12);
+      fill(255);
+      strokeText("" + pocao, 130, 121, 255, 0);
+      
+      /* Se o número de poções for maior que zero, o ícone terá cor vermelha nas hotkeys. Se for menor que 1
+      ficará preto e branco indicando que as poções acabaram */
+      if(pocao > 0) image(pocaoHp,110,95);
+      else image(pocaoHpVazio,110,95);
+      
+      // Código que recupera a vida do jogador utilizando uma poção caso a tecla "1" seja pressionada
+      if(usePotion == true)
+      {
+        if(regenVida >= 100 || vida >= 300)
+        {
+          usePotion = false;
+          regenVida = 0;
+          
+        } else {
+          
+          regenVida += 2;
+          vida += 2;
+        }
+      }
+      
+      // Cooldown para usar o buff de Stamina novamente
+      if (cdBuffSta >= 0 && cdBuffSta < 5000)
+      {
+        cdBuffSta++;
+        
+      } else {
+        
+        tempoBuffSta = 0;
+      }
+      
+      // Condição para fazer com que o Cooldown se habilite novamente após sair da contagem.
+      if(cdBuffSta == 4999) cdBuffSta++;
+      
+      // Quanto tempo dura o buff de Stamina
+      if(tempoBuffSta >= 0 && tempoBuffSta < 1000)
+      {
+        tempoBuffSta++;                          // Contando o tempo
+        
+      } else if(tempoBuffSta == 1000) {
+        
+        buffStaAtivo = false;                    // Atingiu tempo limite. Buff desliga e regeneração volta ao normal.
+      }
+      
+      //Cool down para a stamina começar a regenerar após uma ação
+      if(cdStamina >= 0 && cdStamina < 100)
+      {
+        cdStamina++;
+        
+      } else if(stamina < 300 && cdStamina == 100) {
+        
+        if(buffStaAtivo == true) stamina += 1.5;    // Checa se o buff de stamina está ativo ou não. Se estiver, stamina regenera a +1.5/frame
+        else stamina += 0.5;                        // Se não, regenera à velocidade normal, no caso, +0.5/frame
+      }
+      
+      /* Se o buff de stamina estiver diponível (variável igual a 1), o ícone terá a cor verde claro nas hotkeys. Se for igual a 0
+      terá a cor mais escura indicando que os buff está indisponível */
+      if(cdBuffSta == 5000) image(buffSta, 166, 95);
+      else image(buffStaVazio, 166, 95);
+        
+      } else {
+        
+        // Seção para o efeito fade da tela de Fim de Jogo
+        if (fadeBG < 255) fadeBG += 0.5;
+        
+        fill(0,0,0,fadeBG);
+        rect(0,0,800,600);
+        
+        
+        if (fadeGameOver < 255) fadeGameOver += 0.5;
+        
+        tint(255, fadeGameOver);
+        image(manchaSangueGO, 325, 200);
+        
+        textSize(36);
+        strokeTextF("FIM DE JOGO", 285, height/2, fadeGameOver, 0);
+    
+      }
+    
+      // Acaba o HP e dá Fim de Jogo
+      if (vida == 0) gameOver = true;
+    
+  }
+  
+}
+
+void keyPressed()
+{ 
+  // Se a tecla 1 for pressionada, será consumida 1 poção e dará início à regeneração de HP do jogador. A poção irá curar 100 Health Points (1/3 do HP)
+  if (keyCode == 49 && pocao > 0 && usePotion == false)
+  {
+    pocao -= 1;
+    usePotion = true;
+  }
+  
+  // Se a tecla 2 for pressionada, será utilizado o buff de Stamina e a regeneração de stamina irá acelerar
+  if (keyCode == 50 && cdBuffSta == 5000)
+  {
+    cdBuffSta = 0;
+    buffStaAtivo = true;
+  }
+  
+  // Se a tecla de barra de espaço for pressionada, será consumido um pouco da stamina (simular ações que usariam Stamina)
+  if (keyCode == 32)
+  {
+    cdStamina = 0;
+    
+    if (stamina < 100) stamina = 0;
+    else stamina -= 100;
+  }
+  
+  // Se a tecla 3 for pressionada, será adicionada uma poção ao stack do jogador
+  if (keyCode == 51 && pocao < 3)    // Não pode haver mais que 3 poções
+  {
+    pocao++;
+  }
+  
+  // Se a tecla 4 for pressionada, será causado 50 de dano (1/6 do HP) ao jogador
+  if (keyCode == 52)
+  {
+    vida -= 50;
+  }
+  
+  // Pausar ==> Tecla 'p'
+  if (keyCode == 80)
+  {
+    if (pausa == false && gameOver == false) pausa = true;            // Só pode pausar se estiver vivo
+    else pausa = false;
+  }
+  
+}
+
+void keyReleased()
+{
+}
+
+//Função para escrever texto branco com contorno (stroke) preto.
+void strokeText(String message, int x, int y, int contorno, int miolo)
+{ 
+  fill(miolo); 
+  text(message, x-1, y); 
+  text(message, x, y-1); 
+  text(message, x+1, y); 
+  text(message, x, y+1); 
+  fill(contorno); 
+  text(message, x, y); 
+}
+
+void strokeTextF(String message, int x, int y, float contorno, int miolo)
+{ 
+  fill(miolo); 
+  text(message, x-1, y); 
+  text(message, x, y-1); 
+  text(message, x+1, y); 
+  text(message, x, y+1); 
+  fill(contorno); 
+  text(message, x, y); 
+} 
